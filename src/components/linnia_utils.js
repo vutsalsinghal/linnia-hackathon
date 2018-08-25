@@ -1,36 +1,30 @@
 import config from '../config';
 import Web3 from 'web3';
 import IPFS from 'ipfs-mini';
+import {encrypt} from './crypto-utils';
 import Linnia from '@linniaprotocol/linnia-js';
-import React, { Component } from 'react'
+import React, { Component } from 'react';
 
-const getWeb3 = () => {
-  return new Promise((resolve, reject) => {
-    // Wait for loading completion to avoid race conditions with web3 injection timing.
-    window.addEventListener('load', async dispatch => {
-      // Checking if Web3 has been injected by the browser (Mist/MetaMask)
-      if (typeof window.web3 !== 'undefined') {
-        // Use Mist/MetaMask's provider.
-        resolve(new Web3(window.web3.currentProvider));
-      } else {
-        reject(NO_METAMASK);
-      }
-    });
-  });
-};
 
-let web3;
+const hubAddress = config.LINNIA_HUB_ADDRESS;
+const protocol = config.LINNIA_IPFS_PROTOCOL;
+const port = config.LINNIA_IPFS_PORT;
+const host = config.LINNIA_IPFS_HOST;
+const gasPrice = 20
+const gas = 500000
 
-web3 = await getWeb3();
+
+const web3 = new Web3(window.web3.currentProvider)
   
-const ipfs = new IPFS({ host: host, port: port, protocol: protocol });
+const ipfs = new IPFS({ host: host, port: port, protocol: protocol })
 
-const linnia = new Linnia(web3, ipfs, { hubAddress });
+const linnia = new Linnia(web3, ipfs, { hubAddress })
 
 
-createRecord(_metadata, _data, ownerPublicKey) {
+async function createRecord(metadata, data, ownerPublicKey){
+  let encrypted, ipfsRecord;
 try {
-    encrypted = await encrypt(new Buffer(viewerPublicKey, 'hex'), _data)
+    encrypted = await encrypt(new Buffer(ownerPublicKey, 'hex'), data)
   } catch (e) {
     console.error(e)
 	return
@@ -47,13 +41,13 @@ try {
 	return
   }
 
-  const dataUri = viewerFile[0].hash
-  const [owner] = await store.getState().auth.web3.eth.getAccounts()
-  const datahash = await web3.util.soliditySha3(metadata, dataUri) 
+  const dataUri = ipfsRecord[0].hash
+  const [owner] = await web3.eth.getAccounts()
+  const dataHash = await web3.util.soliditySha3(metadata, dataUri) 
 
   try {
     const { records } = await linnia.getContractInstances()
-    await records.addRecord(dataHash, _metadata, dataUri, {
+    await records.addRecord(dataHash, metadata, dataUri, {
       from: owner,
       gasPrice,
       gas,
@@ -65,7 +59,7 @@ try {
 }
 
 
-class AddRecord extends Component {
+export class AddRecord extends Component {
 
 	constructor (props) {
     	super(props)
@@ -89,18 +83,18 @@ class AddRecord extends Component {
       <form className='pure-form pure-form-stacked' onSubmit={this.handleSubmit}>
         <fieldset>
           <label htmlFor='event'>Event Name</label>
-          <input id='event' type='text' value={this.state.event} onChange={this.onInputChange('event')} placeholder='Event Name' />
+          <input id='event' type='text' value={this.state.event} placeholder='Event Name' />
 
           <br />
 
           <label htmlFor='description'>Event Description</label>
-          <input id='description' type='text' value={this.state.description} onChange={this.onInputChange('description')} placeholder='Event Details' />
+          <input id='description' type='text' value={this.state.description}  placeholder='Event Details' />
 
           
 
           <br />
           <label htmlFor='public_key'>Your Public Key</label>
-          <input id='public_key' type='text' value={this.state.pk} onChange={this.onInputChange('public_key')} placeholder='Public Key' />
+          <input id='public_key' type='text' value={this.state.owner_pk} placeholder='Public Key' />
 
           
 
@@ -109,8 +103,6 @@ class AddRecord extends Component {
           <button type='submit' className='pure-button pure-button-primary'>Create Event</button>
         </fieldset>
       </form>
-      )
+      );
   }
 }
-
-export default AddRecord
