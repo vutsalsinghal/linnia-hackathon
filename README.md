@@ -16,25 +16,27 @@ our events secretly and engaging, exotic way
 
 ## Getting Started
 
-find a member =)
-
 ### Prerequisites
 
-* use a browser with metamask
-* have public key and private key. see https://consensys.github.io/linnia-faucet/?42
-* register as a linnia user. see https://consensys.github.io/linnia-faucet/?42
+- Use a browser with metamask.
+- Register and become a Linnia User from [here](https://consensys.github.io/linnia-faucet/?42)
+- Get public key and private key from the same link above.
 
 ### Installing
 
-* git clone
-* npm install
-* npm start
+```
+$ git clone https://github.com/vutsalsinghal/linnia-hackathon.git
+$ npm install
+$ npm start
+```
 
 ## Built With
 
-* [Linnia](https://github.com/ConsenSys/linnia-box) - Permission and storage protocol
+* [Linnia](https://github.com/ConsenSys/Linnia-Smart-Contracts) - Permission protocol
 
 ## Contributing
+
+- We appreciate and welcome any contribution. Send PR!
 
 ## Authors
 
@@ -45,9 +47,3 @@ find a member =)
 | Amit Panghal | [@panghalamit](https://github.com/panghalamit) |
 | Mickael Germemont | [@mickaelgermemont](https://github.com/mickaelgermemont) |
 | Lavera | [@lavera](https://github.com/laveradesign) |
-
-## License
-
-
-## Acknowledgments
-
