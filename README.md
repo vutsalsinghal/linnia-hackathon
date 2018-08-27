@@ -3,16 +3,13 @@
 **Application Name**: Inner circle
 ![Image Logo](https://github.com/vutsalsinghal/linnia-hackathon/blob/master/Logo_SEM.jpg)
 
-### Mission Statement:
-How we spred, promote, advertize our secret dinnning events
-to our sef growing inner-circle of members . so that, they can confidently recommend
-our events secretly and engaging, exotic way
+### Description: 
+We've built an application using Linnia Protocol to spread, promote and advertise any _**secret**_ event (meetup, exclusive workshop, private dining, etc) to the inner-circle of members. Existing members can refer their friends to join the inner-circle.
 
-
-#### If your lucky someone will refer you into the inner circle and you will be able to attend an exciting event!
-* You are organizer: create an event and secretly share the details to your members.
-* You are the member: view the upcoming event and send referals to expand the circle. you can register for event and pay a variable eth amount depending on the event.
-* You are the friend of the member: Register with your ETH address and public key and then you will be member!
+#### User Stories
+- You are an organizer: Create an event using `Add Event` form to secretly share the details with the inner-circle.
+- You are a member: View and accept invite to upcoming event and send referrals to expand the circle.
+* You are refered by a member: Accept the referral extended by a member using your ETH address and public key and then accept invitation to upcoming event.
 
 ## Getting Started
 
@@ -47,3 +44,8 @@ $ npm start
 | Amit Panghal | [@panghalamit](https://github.com/panghalamit) |
 | Mickael Germemont | [@mickaelgermemont](https://github.com/mickaelgermemont) |
 | Lavera | [@lavera](https://github.com/laveradesign) |
+
+## TODO
+- Have `n` upcoming event instead of only 1
+- Have a notification model (email, push, etc).
+- Black-list members
