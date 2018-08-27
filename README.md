@@ -1,7 +1,7 @@
 ## Linnia Hackathon powered by ConsenSys
 
 **Application Name**: Inner circle
-![Image Logo](https://github.com/vutsalsinghal/linnia-hackathon/blob/master/Logo_SEM.jpg)
+![Image Logo](https://github.com/vutsalsinghal/linnia-hackathon/blob/master/static/Logo_SEM.jpg)
 
 ### Description: 
 We've built an application using Linnia Protocol to spread, promote and advertise any _**secret**_ event (meetup, exclusive workshop, private dining, etc) to the inner-circle of members. Existing members can refer their friends to join the inner-circle.
