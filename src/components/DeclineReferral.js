@@ -30,7 +30,7 @@ export class DeclineReferral extends Component {
         return (
             <Form onSubmit={this.handleSubmit} error={!!this.state.errorMessage}>
                 <Message error header="Oops!" content={this.state.errorMessage} />
-                <Button basic primary type='submit' loading={this.state.loading} disabled={this.state.loading}>Decline Referral</Button>
+                <Button basic color='red' type='submit' loading={this.state.loading} disabled={this.state.loading}>Decline Referral</Button>
                 {this.state.msg}
             </Form>
         );

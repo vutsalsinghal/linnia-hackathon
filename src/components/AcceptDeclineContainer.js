@@ -5,11 +5,9 @@ import {Grid} from 'semantic-ui-react';
 
 export const AcceptDeclineContainer = () => {
     return (
-        <Grid>
-        	<Grid.Row>
-            	<AcceptReferral />
-            	<DeclineReferral />
-            </Grid.Row>
-        </Grid>
+    	<div>
+       		<AcceptReferral />
+       		<DeclineReferral />
+       	</div>
     );
 };

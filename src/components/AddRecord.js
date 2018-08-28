@@ -54,9 +54,7 @@ export class AddRecord extends Component {
         };
         const ownerPublicKey = this.state.owner_pk;
         let encrypted, ipfsRecord;
-        console.log(this.state.start_time);
         const unix_start_time = moment(this.state.start_time).unix();
-        console.log(unix_start_time);
         this.setState({ errorMessage: '', loading: true });
 
         try {
