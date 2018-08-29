@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import { Form, Button, Message, Card } from 'semantic-ui-react';
 import Linnia from '@linniaprotocol/linnia-js';
-import Web3 from 'web3';
 import IPFS from 'ipfs-mini';
+import web3 from '../ethereum/web3';
 import config from '../config';
 import SecretEventOrg from '../ethereum/SecretEventOrg';
 import { decrypt } from './crypto-utils';
@@ -12,7 +12,6 @@ const protocol = config.LINNIA_IPFS_PROTOCOL;
 const port = config.LINNIA_IPFS_PORT;
 const host = config.LINNIA_IPFS_HOST;
 
-const web3 = new Web3(window.web3.currentProvider);
 const ipfs = new IPFS({ host: host, port: port, protocol: protocol });
 const linnia = new Linnia(web3, ipfs, { hubAddress });
 

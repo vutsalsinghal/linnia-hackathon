@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Form, Button, Message, Grid } from 'semantic-ui-react';
+import { Form, Button, Message } from 'semantic-ui-react';
 import { acceptReferral, checkIfReferred } from '../actions/ReferralAction';
 import { getDefaultEthereumAccount } from '../actions/EthereumAccountAction';
 

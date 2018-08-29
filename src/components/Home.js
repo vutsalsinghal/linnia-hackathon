@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Grid, Card, Icon, Modal, Button } from 'semantic-ui-react';
 import { AcceptDeclineContainer } from './AcceptDeclineContainer';
 import SecretEventOrg from '../ethereum/SecretEventOrg';
-import Web3 from 'web3';
+import web3 from '../ethereum/web3';
 import FullDetail from './FullDetail';
 import { checkIfMember, checkIfOwner, checkIfReferred } from '../actions/ReferralAction';
 
@@ -29,12 +29,26 @@ class Home extends Component {
   }
 
   renderEvent() {
+    let cardBody;
+
+    if (this.state.eventName !== ''){
+      cardBody = (
+        <div>
+        <Card.Header>Name: {this.state.eventName}</Card.Header>
+        <Card.Meta>Capacity: {this.state.capacity}</Card.Meta>
+        <Card.Description>Min Deposit: {web3.utils.fromWei(this.state.deposit.toString(), 'ether')} ether</Card.Description>
+        </div>
+      );
+    }else{
+      cardBody = (
+        <Card.Header>No Upcomming Event!</Card.Header>
+      );
+    }
+
     return (
       <Card>
         <Card.Content>
-          <Card.Header>Name: {this.state.eventName}</Card.Header>
-          <Card.Meta>Capacity: {this.state.capacity}</Card.Meta>
-          <Card.Description>Min Deposit: {Web3.utils.fromWei(this.state.deposit.toString(), 'ether')} ether</Card.Description>
+          {cardBody}
         </Card.Content>
       </Card>
     );

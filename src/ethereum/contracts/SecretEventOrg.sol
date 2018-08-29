@@ -1,6 +1,6 @@
 pragma solidity ^0.4.24;
 
-// Deployed at 0x7b248398ef1497e3832e4a66a8eaa4eba6a8f8d6 on Ropsten!
+// Deployed at 0xa6dd1b746b37549b7d6645d2e87df6b38f95dd7c on Ropsten!
 
 contract SecretEventOrg{
     address public organizer;                                                  // Address of organizer
@@ -11,7 +11,7 @@ contract SecretEventOrg{
         uint provenance;
         address initiator;
         uint referrals_remaining;
-        string public_keys;
+        string public_key;
     }
     
     struct SecretEvent {                                                        // Event information
@@ -123,6 +123,11 @@ contract SecretEventOrg{
     // Returns event info
     function getEventInfo(bytes32 _recordHash) public view returns(string eventName, string describe, uint capacity, uint deposit, uint start_time, uint duration){
         return (eventInfo[_recordHash].eventName, eventInfo[_recordHash].describe, eventInfo[_recordHash].capacity, eventInfo[_recordHash].deposit, eventInfo[_recordHash].start_time, eventInfo[_recordHash].duration);
+    }
+    
+    // Returns member info
+    function getMemberInfo(address _addr) public view returns(uint provenance, address initiator, uint referrals_remaining, string public_key){
+        return (memberInfo[_addr].provenance, memberInfo[_addr].initiator, memberInfo[_addr].referrals_remaining, memberInfo[_addr].public_key);
     }
     
     // Checks if address was referred.
