@@ -13,7 +13,7 @@ export default () => {
                     <Menu.Item><Link to='/addEvent'><Icon name='add' />Add Event</Link></Menu.Item>
                 </Menu.Menu>
                 <Menu.Menu>
-                    <Modal trigger={<Menu.Item>Send Referral</Menu.Item>}>
+                    <Modal trigger={<Menu.Item><Icon name='user plus' />Send Referral</Menu.Item>}>
                         <Modal.Header>Give Referrals to Your Friends</Modal.Header>
                         <Modal.Content>
                             <AddReferral />
