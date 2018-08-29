@@ -4,6 +4,7 @@ import { AcceptDeclineContainer } from './AcceptDeclineContainer';
 import SecretEventOrg from '../ethereum/SecretEventOrg';
 import web3 from '../ethereum/web3';
 import FullDetail from './FullDetail';
+import PendingPermission from './PendingPermission';
 import { checkIfMember, checkIfOwner, checkIfReferred } from '../actions/ReferralAction';
 
 class Home extends Component {
@@ -93,6 +94,23 @@ class Home extends Component {
                   <Modal.Header>Full Details of Event</Modal.Header>
                   <Modal.Content>
                     <FullDetail />
+                  </Modal.Content>
+                </Modal>
+              </Grid.Row>
+            }
+
+            {this.state.isOwner &&
+              <Grid.Row>
+                <Modal size='small'
+                  trigger={
+                    <Button icon labelPosition='left' className="primary" floated="right">
+                      <Icon name='unlock' />
+                      Pending Permissions
+                   </Button>
+                  }>
+                  <Modal.Header>Pending Permission Request List</Modal.Header>
+                  <Modal.Content>
+                    <PendingPermission />
                   </Modal.Content>
                 </Modal>
               </Grid.Row>

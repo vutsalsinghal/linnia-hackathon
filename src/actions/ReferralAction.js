@@ -6,7 +6,6 @@ export async function checkIfReferred() {
     // Gets the member account.
     const userAddress = await getDefaultEthereumAccount();
     let result = await SecretEventOrg.methods.checkIfReferred(userAddress).call();
-    console.log(result);
     return result;
 };
 
@@ -14,7 +13,6 @@ export async function checkIfMember() {
     // Gets the member account.
     const userAddress = await getDefaultEthereumAccount();
     let result = await SecretEventOrg.methods.checkIfMember(userAddress).call();
-    console.log(result);
     return result;
 };
 
@@ -39,6 +37,5 @@ export async function acceptReferral(linnia_user_pk) {
 };
 
 export async function declineReferral(eth_address) {
-    console.log(eth_address);
     return true;
 };

@@ -57,6 +57,8 @@ export default class FullDeail extends Component {
                     }
                 }
             })
+        }else{
+        	this.setState({errorMessage: "Permission to decrypt has not been to assigned to you yet!"});
         }
     }
 
