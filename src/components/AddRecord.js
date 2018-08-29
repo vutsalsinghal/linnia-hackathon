@@ -69,7 +69,7 @@ export class AddRecord extends Component {
 
         let encrypted, ipfsRecord;
         const unix_start_time = moment(this.state.start_time).unix();
-        this.setState({ errorMessage: '', loading: true });
+        this.setState({ errorMessage: '', msg: '', loading: true });
 
         try {
             encrypted = await encrypt(this.state.owner_publicKey, JSON.stringify(data));
@@ -106,7 +106,7 @@ export class AddRecord extends Component {
         // Add Permissions
         this.state.members.map(async (member) => {
             try{
-                encrypted = await encrypt(member.PublicKey, JSON.stringify(data));
+                encrypted = await encrypt(member.publicKey, JSON.stringify(data));
             }catch(err){
                 this.setState({ errorMessage: err.message });
                 return;
@@ -129,7 +129,7 @@ export class AddRecord extends Component {
                 const { permissions } = await linnia.getContractInstances();
                 await permissions.grantAccess(dataHash, member.Address, dataUri, { from: accounts[0] });
 
-                this.setState({ msg: <Message positive header="Success!" content={"Invites Created Successfully!"} /> });
+                this.setState({ msg: <Message positive header="Success!" content={member.Address + " Invited Successfully!"} /> });
             }catch(err){
                 this.setState({ errorMessage: err.message });
                 return;
