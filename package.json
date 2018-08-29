@@ -4,7 +4,8 @@
   "private": true,
   "dependencies": {
     "@linniaprotocol/linnia-js": "^0.1.4",
-    "eth-lib": "https://github.com/alan2207/eth-lib#cacfdbf5ffe7453168f9dfbf8bba281be3c229d0",
+    "eth-crypto": "^1.2.3",
+    "eth-lib": "git+https://github.com/alan2207/eth-lib.git#cacfdbf5ffe7453168f9dfbf8bba281be3c229d0",
     "ethereumjs-util": "^5.2.0",
     "fs-extra": "^7.0.0",
     "ganache-cli": "^6.1.8",
