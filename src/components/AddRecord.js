@@ -36,11 +36,10 @@ export class AddRecord extends Component {
     async componentDidMount(){
         let members = [];
         let i = 0;
-        let memberAddress = '';
-        let memberInfo;
+        let memberAddress, memberInfo;
 
         try{
-            while(memberAddress != "0x0"){
+            while(memberAddress !== "0x0"){
                 memberAddress = await SecretEventOrg.methods.innerCircle(i).call();
                 memberInfo = await SecretEventOrg.methods.getMemberInfo(memberAddress).call();
                 members.push({'Address': memberAddress, 'publicKey': memberInfo.public_key});

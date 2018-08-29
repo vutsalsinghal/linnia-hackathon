@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Form, Button, Message, Card, Icon } from 'semantic-ui-react';
+import { Form, Button, Message, Card } from 'semantic-ui-react';
 import Linnia from '@linniaprotocol/linnia-js';
 import IPFS from 'ipfs-mini';
 import  moment  from 'moment';

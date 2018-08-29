@@ -18,7 +18,7 @@ export class DeclineReferral extends Component {
         try {
             currentEthAddress = await getDefaultEthereumAccount();
             await declineReferral(currentEthAddress);
-            this.setState({ msg: <Message positive header="Success!" content={"Referral declined for user '" + currentEthAddress + "'."} /> })
+            this.setState({ msg: <Message positive header="Success!" content={"Referral declined for user " + currentEthAddress} /> })
         } catch (err) {
             this.setState({ errorMessage: err.message });
         }
