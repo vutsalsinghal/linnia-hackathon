@@ -51,7 +51,7 @@ export default class FullDeail extends Component {
                     const encrypted = ipfsRes;
                     try {
                         const decrypted = await decrypt(privateKey, encrypted);
-                        this.setState({decrypted});
+                        this.setState({decrypted: decrypted});
                     } catch (e) {
                         this.setState({errorMessage: "Error Decrypting Data. Probably Wrong Private Key!"});
                     }
@@ -85,7 +85,7 @@ export default class FullDeail extends Component {
                     <Form.Group>
                         <Form.Field width={12}>
                             <label htmlFor='linnia_pk'>Linnia Private Key</label>
-                            <input type='text' onChange={event => this.setState({ linnia_pk: event.target.value })} value={this.state.linnia_pk} />
+                            <input type='password' onChange={event => this.setState({ linnia_pk: event.target.value })} value={this.state.linnia_pk} />
                         </Form.Field>
                         <Button basic primary type='submit' loading={this.state.loading} disabled={this.state.loading}>Decrypt</Button>
                     </Form.Group>

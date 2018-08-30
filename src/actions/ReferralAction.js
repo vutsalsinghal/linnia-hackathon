@@ -20,7 +20,7 @@ export async function checkIfOwner() {
     // Gets the user account.
     //TODO: refactor to use contract's owner from contract (but needs to refactor small contract first).
     const userAddress = await getDefaultEthereumAccount();
-    return userAddress === config.CONTRACT_OWNER_PK;
+    return userAddress.toUpperCase() === config.CONTRACT_OWNER_PK.toUpperCase();
 };
 
 export async function referMember(referralAddress) {
