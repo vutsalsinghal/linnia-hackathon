@@ -7,6 +7,7 @@ import web3 from '../ethereum/web3';
 import config from '../config';
 import SecretEventOrg from '../ethereum/SecretEventOrg';
 import { decrypt } from './crypto-utils';
+import { checkIfOwner } from '../actions/ReferralAction';
 
 const hubAddress = config.LINNIA_HUB_ADDRESS;
 const protocol = config.LINNIA_IPFS_PROTOCOL;
@@ -25,22 +26,30 @@ export default class FullDeail extends Component {
         linnia_pk:'',
         decrypted:'',
         eventHash:'',
+        isOwner: false,
     }
 
     async componentDidMount(){
         var eventHash = await SecretEventOrg.methods.currentEventHash().call();
-        this.setState({eventHash});
+        const isOwner = await checkIfOwner();
+        this.setState({eventHash: eventHash});
+        this.setState({isOwner: isOwner});
     }
 
     handleSubmit = async (event) => {
         event.preventDefault();
         const userAddr = await web3.eth.getAccounts();
-        let p = await linnia.getPermission(this.state.eventHash,userAddr[0]);
+        let p;
+        if(this.state.isOwner) {
+            p = await linnia.getRecord(this.state.eventHash);
+        } else{
+            p = await linnia.getPermission(this.state.eventHash,userAddr[0]);
+        }
         console.log(p);
         
         this.setState({errorMessage:'', decrypted:''});
 
-        if(p && p.canAccess){
+        if(this.state.isOwner || (p && p.canAccess)){
             const privateKey = this.state.linnia_pk;
             const ipfsLink = p.dataUri;
 
