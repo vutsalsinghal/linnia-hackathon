@@ -31,6 +31,39 @@ function utilsIpfsDownloadAndDecrypt_callback(ipfsDataUri, privkey, cb) {
   });
 }
 
+class LinniaJsGetPermission extends Component {
+  state = {
+    dataHash: '',
+    viewer: ''
+  }
+
+  handleChangeDataHash = async (event) => {
+    this.setState({ dataHash: event.target.value });
+    await this.lookupLinniaJsPermission(this, event.target.value, this.state.viewer)
+  }
+
+  handleChangeViewer = async (event) => {
+    this.setState({ viewer: event.target.value })
+    await this.lookupLinniaJsPermission(this, this.state.dataHash, event.target.value)
+  }
+
+  lookupLinniaJsPermission = async (that, dataHash, viewerAddress) => {
+    if(dataHash && viewerAddress){
+      const permission = await linnia.getPermission(dataHash, viewerAddress);
+      that.setState({ result: JSON.stringify({ permission }) })
+    }
+  }
+
+  render() {
+    return (<div>
+      <h2>linnia-js getPermission(dataHash, viewer) util</h2>
+      <p>Data hash <textarea rows="4" cols="50" value={this.state.dataHash} onChange={this.handleChangeDataHash} /></p>
+      <p>ETH @ <textarea rows="4" cols="50" value={this.state.viewer} onChange={this.handleChangeViewer} /></p>
+      <p>Result <textarea rows="4" cols="50" value={this.state.result} /></p>
+    </div>)
+  }
+}
+
 class LinniaJsGetRecord extends Component {
   state = {
     dataHash: '',
@@ -52,7 +85,7 @@ class LinniaJsGetRecord extends Component {
   render() {
     return (<div>
       <h2>linnia-js getRecord(dataHash) util</h2>
-      <p>Record dataHash <textarea rows="4" cols="50" value={this.state.dataHash} onChange={this.handleChangeDataHash} /></p>
+      <p>Data hash <textarea rows="4" cols="50" value={this.state.dataHash} onChange={this.handleChangeDataHash} /></p>
       <p>Result <textarea rows="4" cols="50" value={this.state.result} /></p>
     </div>)
   }
@@ -179,74 +212,6 @@ class Decryptor extends Component {
   }
  }
 
-class Encryptor_getter_setter extends Component {
-  constructor(props) {
-    super(props);
-
-    let setPubkey;
-    let getPubkey;
-
-    if (props.pubkeySetter === undefined){
-      console.log('Encryptor.1')
-      setPubkey = this.setPubkeyLocalState;
-    } else {
-      console.log('Encryptor.2')
-      setPubkey = props.pubkeySetter;
-    }
-
-    if (props.pubkeyGetter === undefined){
-      console.log('Encryptor.3')
-      getPubkey = this.getPubkeyLocalState;
-    } else {
-      console.log('Encryptor.4')
-      getPubkey = props.pubkeyGetter;
-    }
-
-    this.state = { plaintext: '', result: '', setPubkey, getPubkey };
-  }
-
-  setPubkeyLocalState(pubkey){
-    this.setState({pubkey})
-  }
-
-  getPubkeyLocalState(){
-    return this.state.pubkey
-  }
-
-  handleChange_plaintext = event => {
-    this.setState({ plaintext: event.target.value });
-    this.myEncrypt(event.target.value, this.state.pubkey)
-  };
-
-  handleChange_pubkey = event => {
-    this.state.setPubkey(event.target.value)
-    //this.setState({ pubkey: event.target.value });
-    this.myEncrypt(this.state.plaintext, event.target.value)
-  };
-
-  myEncrypt = async (input, pubkey) => {
-    if(input && pubkey){
-      try {
-        const result = await encrypt(pubkey, input);
-        this.setState({ result });
-      } catch (e) {
-        this.setState({ result: e });
-      }
-    }
-  };
-
-  render() {
-    return (<div>
-      <h2>Encrypt util</h2>
-      <ul>
-        <li>encrypt this text <textarea rows="4" cols="50" value={this.state.plaintext} onChange={this.handleChange_plaintext} /> </li>
-        <li>public key <textarea rows="4" cols="50" value={this.state.getPubkey()} onChange={this.handleChange_pubkey} /> </li>
-        <li>encrypted as <textarea rows="4" cols="50" value={this.state.result}/></li>
-      </ul>
-    </div>)
-  }
-}
-
 class Encryptor extends Component {
   constructor(props) {
     super(props);
@@ -351,9 +316,7 @@ export default class Debugging extends Component {
       this.handleOnLinniaCreateRecordPermissionClick = this.handleOnLinniaCreateRecordPermissionClick.bind(this)
       this.handleChangeLinniaRecordPermissionToEthAddress = this.handleChangeLinniaRecordPermissionToEthAddress.bind(this)
       this.handleChangeLinniaRecordPermissionPublicKey = this.handleChangeLinniaRecordPermissionPublicKey.bind(this)
-      this.handleChangeLinniaJsPermissionDataHash = this.handleChangeLinniaJsPermissionDataHash.bind(this)
-      this.handleChangeLinniaJsPermissionEthAddress = this.handleChangeLinniaJsPermissionEthAddress.bind(this)
-
+      
       this.handleChangeIpfsDownloadDecryptPrivKey = this.handleChangeIpfsDownloadDecryptPrivKey.bind(this)
       this.handleChangeLinniaRecordPermissionMyPrivateKey = this.handleChangeLinniaRecordPermissionMyPrivateKey.bind(this)
     }
@@ -542,24 +505,6 @@ export default class Debugging extends Component {
       }
     }
 
-    async handleChangeLinniaJsPermissionDataHash(event){
-      this.setState({linniaJsPermissionDataHash: event.target.value})
-      await this.lookupLinniaJsPermission(this, event.target.value, this.state.linniaJsPermissionDataHash)
-    }
-
-    async handleChangeLinniaJsPermissionEthAddress(event){
-      this.setState({linniaJsPermissionEthAddress: event.target.value})
-      await this.lookupLinniaJsPermission(this, this.state.linniaJsPermissionDataHash, event.target.value)
-    }
-
-    async lookupLinniaJsPermission(that, dataHash, viewerAddress){
-      if(dataHash && viewerAddress){
-        const linniaJsPermissionResult = await linnia.getPermission(dataHash, viewerAddress);
-        //const linniaJsPermissionResult = JSON.stringify({ })
-        that.setState({linniaJsPermissionResult: JSON.stringify({ linniaJsPermissionResult}) })
-      }
-    }
-
     hashCode = function(s) {
       var h = 0, l = s.length, i = 0;
       if ( l > 0 )
@@ -597,8 +542,6 @@ export default class Debugging extends Component {
               <Decryptor />
 
               <Separator />
-              // <Encryptor_getter_setter pubkeySetter={(pk) => {this.setState({a: pk})}} pubkeyGetter={() =>{return this.state.a}} /> <p>a={this.state.a}</p>
-              // <Encryptor pubkey={this.state.a} /> <p>a={this.state.a}</p>
               <Encryptor />
 
               <Separator />
@@ -639,11 +582,7 @@ export default class Debugging extends Component {
               </div>
 
               <Separator />
-              <div>
-                <p>linnia permission dataHash<textarea rows="4" cols="50" value={this.state.linniaJsPermissionDataHash} onChange={this.handleChangeLinniaJsPermissionDataHash} /></p>
-                <p>linnia permission eth address<textarea rows="4" cols="50" value={this.state.linniaJsPermissionEthAddress} onChange={this.handleChangeLinniaJsPermissionEthAddress} /></p>
-                <p>result <textarea rows="4" cols="50" value={this.state.linniaJsPermissionResult} /></p>
-              </div>
+              <LinniaJsGetPermission />
 
             </div>
         );
