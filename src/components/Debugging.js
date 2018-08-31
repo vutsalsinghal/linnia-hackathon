@@ -1,13 +1,10 @@
 import React, { Component } from 'react';
-import { Form, Button, Message, Card, Icon } from 'semantic-ui-react';
 import Linnia from '@linniaprotocol/linnia-js';
 import IPFS from 'ipfs-mini';
-import  moment  from 'moment';
 import web3 from '../ethereum/web3';
 import config from '../config';
 import SecretEventOrg from '../ethereum/SecretEventOrg';
 import { decrypt, encrypt } from './crypto-utils';
-import EthCrypto from 'eth-crypto';
 
 const hubAddress = config.LINNIA_HUB_ADDRESS;
 const protocol = config.LINNIA_IPFS_PROTOCOL;
@@ -23,13 +20,23 @@ const gas = 500000;
 function utilsIpfsDownloadAndDecrypt_callback(ipfsDataUri, privkey, cb) {
   ipfs.cat(ipfsDataUri, async (err, ipfsRes) => {
     if(err){
-      cb(err, null)
+      cb(err, null, ipfsRes)
     }else{
-      const result = await decrypt(privkey, ipfsRes)
-      cb(err, result)
+      console.log('utilsIpfsDownloadAndDecrypt_callback.decrypt(privkey,ipfsRes)=', {privkey, ipfsRes})
+      decrypt(privkey, ipfsRes)
+      .then(result => { cb(null, result, ipfsRes) })
+      .catch(e => { cb(err, null, ipfsRes) })
     }
   });
 }
+
+function hashCode(s) {
+  var h = 0, l = s.length, i = 0;
+  if ( l > 0 )
+    while (i < l)
+      h = (h << 5) - h + s.charCodeAt(i++) | 0;
+  return h;
+};
 
 class LinniaJsGetPermission extends Component {
   state = {
@@ -56,7 +63,7 @@ class LinniaJsGetPermission extends Component {
 
   render() {
     return (<div>
-      <h2>linnia-js getPermission(dataHash, viewer) util</h2>
+      <h3>linnia-js getPermission(dataHash, viewer) util</h3>
       <p>Data hash <textarea rows="4" cols="50" value={this.state.dataHash} onChange={this.handleChangeDataHash} /></p>
       <p>ETH @ <textarea rows="4" cols="50" value={this.state.viewer} onChange={this.handleChangeViewer} /></p>
       <p>Result <textarea rows="4" cols="50" value={this.state.result} /></p>
@@ -84,7 +91,7 @@ class LinniaJsGetRecord extends Component {
 
   render() {
     return (<div>
-      <h2>linnia-js getRecord(dataHash) util</h2>
+      <h3>linnia-js getRecord(dataHash) util</h3>
       <p>Data hash <textarea rows="4" cols="50" value={this.state.dataHash} onChange={this.handleChangeDataHash} /></p>
       <p>Result <textarea rows="4" cols="50" value={this.state.result} /></p>
     </div>)
@@ -129,35 +136,66 @@ class Separator extends Component {
   }
 }
 
+class IpfsUpload extends Component {
+
+  handleOnClick = (event) => {
+    const data = this.props.data
+    console.log('IpfsUpload', {data})
+    this.upload(data)
+    .then(this.props.then)
+    .catch(this.props.catch)
+  }
+
+  upload = (data) => {
+    console.log('IpfsUpload.upload', {data})
+    return new Promise((resolve, reject) => {
+      ipfs.add(data, (err, ipfsRed) => {
+        err ? reject(err) : resolve(ipfsRed);
+      })
+    })
+  }
+
+  render() {
+    return (<p><button onClick={this.handleOnClick}>upload encrypted text to ipfs</button></p>)
+  }
+}
+
 class IpfsDownloadAndDecrypt extends Component {
   state = {
-    status: [],
-    ipfsDataUri: '',
-    ipfsDownloadDecryptPrivKey: '',
+    dataUri: '',
+    privKey: '',
     ipfsData: '',
+    addStatus: this.props.addStatus
   };
 
-  handleChangeIpfsDataUri = event => {
-    this.setState({ ipfsDataUri: event.target.value });
+  handleChangeDataUri = event => {
+    this.setState({ dataUri: event.target.value });
   };
 
-  handleChangeIpfsDownloadDecryptPrivKey = event => {
-    this.setState({ ipfsDownloadDecryptPrivKey: event.target.value });
+  handleChangePrivKey = event => {
+    this.setState({ privKey: event.target.value });
   };
 
   handleOnIpfsClick = event => {
-    this.ipfsDataDownload(this.state.ipfsDataUri, this.state.ipfsDownloadDecryptPrivKey)
+    this.ipfsDataDownload(this.state.dataUri, this.state.privKey)
   }
 
-  ipfsDataDownload = (ipfsDataUri, privkey) => {
-    this.setState({status: ['loading event ipfs uri='+ipfsDataUri, ...this.state.status]})
+  ipfsDataDownload = (dataUri, privkey) => {
+    console.log('loading event ipfs {dataUri, privkey}=', {dataUri, privkey})
 
     // Use ipfs library to pull the encrypted data down from IPFS
-    utilsIpfsDownloadAndDecrypt_callback(ipfsDataUri, privkey, (err, clear) => {
+    utilsIpfsDownloadAndDecrypt_callback(dataUri, privkey, (err, clear, data) => {
       if(err){
-        this.setState({status: ['ipfs download+decrypt.failed. reason='+err.message, ...this.state.status], ipfsData: err})
+        console.log('ipfs download+decrypt.failed. reason='+err.message)
+        this.setState({ ipfsData: err, ipfsDataDecrypted: '' })
       }else{
-        this.setState({status: ['ipfs download+decrypt.success', ...this.state.status], ipfsDataDecrypted: clear})
+        if(clear){
+          console.log('ipfs download+decrypt.ok1')
+          this.setState({ ipfsData: data, ipfsDataDecrypted: clear })
+        } else {
+          console.log('ipfs download+decrypt.ok2')
+          this.setState({ ipfsData: data, ipfsDataDecrypted: '' })
+        }
       }
     })
   }
@@ -165,9 +203,9 @@ class IpfsDownloadAndDecrypt extends Component {
   render() {
     return (
       <div>
-        <h2>IPFS Download & Decrypt util</h2>
-        <p>ipfs uri <textarea rows="4" cols="50" value={this.state.ipfsDataUri} onChange={this.handleChangeIpfsDataUri} /></p>
-        <p>private key <textarea rows="4" cols="50" value={this.state.ipfsDownloadDecryptPrivKey} onChange={this.handleChangeIpfsDownloadDecryptPrivKey} /></p>
+        <h3>IPFS Download & Decrypt util</h3>
+        <p>ipfs uri <textarea rows="4" cols="50" value={this.state.dataUri} onChange={this.handleChangeDataUri} /></p>
+        <p>private key <textarea rows="4" cols="50" value={this.state.privKey} onChange={this.handleChangePrivKey} /></p>
         <p><button onClick={this.handleOnIpfsClick}>get ipfs data</button></p>
         <p>Ipfs data <textarea rows="4" cols="50" value={this.state.ipfsData} /></p>
         <p>Ipfs data decrypted <textarea rows="4" cols="50" value={this.state.ipfsDataDecrypted} /></p>
@@ -202,7 +240,7 @@ class Decryptor extends Component {
 
   render() {
     return (<div>
-      <h2>Decrypt util</h2>
+      <h3>Decrypt util</h3>
       <ul>
         <li>decrypt this text <textarea rows="4" cols="50" value={this.state.decryptMe} onChange={this.handleChange_decryptMe} /> </li>
         <li>private key <textarea rows="4" cols="50" value={this.state.privKey} onChange={this.handleChange_privateKey} /> </li>
@@ -238,6 +276,8 @@ class Encryptor extends Component {
     }
 
     this.state = { plaintext, result, pubkey };
+    //this.handleChange_plaintext = this.handleChange_plaintext.bind(this)
+    //this.handleChange_pubkey = this.handleChange_pubkey.bind(this)
   }
 
   handleChange_plaintext = event => {
@@ -256,19 +296,25 @@ class Encryptor extends Component {
       try {
         const result = await encrypt(pubkey, input);
         this.setState({ result });
+        if(this.props.onChangeResult){
+          this.props.onChangeResult(result)
+        }
       } catch (e) {
         this.setState({ result: e });
+        if(this.props.onChangeResult){
+          this.props.onChangeResult(e)
+        }
       }
     }
   };
 
   render() {
     return (<div>
-      <h2>Encrypt util</h2>
+      <h3>Encrypt util</h3>
       <ul>
         <li>encrypt this text <textarea rows="4" cols="50" value={this.state.plaintext} onChange={this.handleChange_plaintext} /> </li>
         <li>public key <textarea rows="4" cols="50" value={this.state.pubkey} onChange={this.handleChange_pubkey} /> </li>
-        <li>encrypted as <textarea rows="4" cols="50" value={this.state.result}/></li>
+        <li>encrypted as <textarea rows="4" cols="50" value={this.state.result} /></li>
       </ul>
     </div>)
   }
@@ -283,15 +329,8 @@ export default class Debugging extends Component {
         status:[],
         eventHash:'',
 
-        userAddress: '',
-        encryptInput: '',
-        encryptResult: '',
-        decryptResult: '',
-        linniaPermission: '',
-        ipfsData: '',
-        ipfsDataDecrypted: '',
-        ipfsDataUri: '',
         organizer: '',
+
         ipfsUploadInput:'',
         ipfsUploadUri:'',
         linniaRecordDataHash: '',
@@ -301,24 +340,23 @@ export default class Debugging extends Component {
         linniaRecordPermissionPubKey: '',
         linniaRecordPermissionMyPrivateKey: '',
         linniaRecordPermissionDataReEncrypted: '',
-        linniaJsRecordDataHash: '',
-        linniaJsRecordDataHashResult: '',
-        linniaJsPermissionDataHash: '',
-        ipfsDownloadDecryptPrivKey: ''
+
+        makerPubKey: '',
       }
 
       this.handleOnCleanStatusClick = this.handleOnCleanStatusClick.bind(this)
-      this.handleChangeIpfsDataUri = this.handleChangeIpfsDataUri.bind(this)
-      this.handleOnIpfsClick = this.handleOnIpfsClick.bind(this)
       this.handleOnIpfsUploadClick = this.handleOnIpfsUploadClick.bind(this)
-      this.handleChangeIpfsUploadInput = this.handleChangeIpfsUploadInput.bind(this)
       this.handleOnLinniaCreateRecordClick = this.handleOnLinniaCreateRecordClick.bind(this)
       this.handleOnLinniaCreateRecordPermissionClick = this.handleOnLinniaCreateRecordPermissionClick.bind(this)
       this.handleChangeLinniaRecordPermissionToEthAddress = this.handleChangeLinniaRecordPermissionToEthAddress.bind(this)
       this.handleChangeLinniaRecordPermissionPublicKey = this.handleChangeLinniaRecordPermissionPublicKey.bind(this)
-      
-      this.handleChangeIpfsDownloadDecryptPrivKey = this.handleChangeIpfsDownloadDecryptPrivKey.bind(this)
       this.handleChangeLinniaRecordPermissionMyPrivateKey = this.handleChangeLinniaRecordPermissionMyPrivateKey.bind(this)
+      this.addStatus = this.addStatus.bind(this)
+      this.handleEncryptorResultIpfsUpload = this.handleEncryptorResultIpfsUpload.bind(this)
+    }
+
+    addStatus(msg) {
+      this.setState({ status: [msg, ...this.state.status] })
     }
 
     handleOnCleanStatusClick(){
@@ -329,47 +367,15 @@ export default class Debugging extends Component {
         var organizer = await SecretEventOrg.methods.organizer().call()
         var eventHash = await SecretEventOrg.methods.currentEventHash().call()
         this.setState({eventHash, organizer})
-
-        this.linniaPermission()
     }
 
-    handleChangeIpfsDataUri(event) {
-      const ipfsDataUri = event.target.value
-      this.setState({ipfsDataUri})
-      //this.ipfsDataDownload(ipfsDataUri)
-    }
-
-    handleChangeLinniaRecordPermissionMyPrivateKey(event) {
-      this.setState({linniaRecordPermissionMyPrivateKey: event.target.value})
-    }
-
-    async handleChangeLinniaRecordPermissionPublicKey(event) {
-      const linniaRecordPermissionPublicKey = event.target.value
-      console.log('handleChangeLinniaRecordPermissionPublicKey', linniaRecordPermissionPublicKey)
-      this.setState({linniaRecordPermissionPublicKey})
-      //await this.reEncrypt(this, linniaRecordPermissionPubKey, this.state.linniaRecordPermissionDataClearText)
-    }
-
-    async handleChangeLinniaRecordPermissionToEthAddress(event) {
-      const ethAddress = event.target.value
-      console.log('handleChangeLinniaRecordPermissionToEthAddress', ethAddress)
-      this.setState({linniaRecordPermissionToEthAddress: ethAddress})
-      //await this.reEncrypt(this, this.state.linniaRecordPermissionPubKey, this.state.linniaRecordPermissionDataClearText)
-    }
-
-    async reEncrypt(that, pubkey, input){
-      if(pubkey && input){
-        const encryptResult = await encrypt(pubkey, input);
-        that.setState({linniaRecordPermissionDataReEncrypted: encryptResult})
-      }
-    }
-
-    handleChangeIpfsUploadInput(event) {
+    /*handleChangeIpfsUploadInput(event) {
       const input = event.target.value
       this.setState({ipfsUploadInput: input})
-    }
+    }*/
 
     handleOnIpfsUploadClick(event) {
+      console.log('handleOnIpfsUploadClick',this.state.ipfsUploadInput)
       this.ipfsDataUploadPromise(this.state.ipfsUploadInput)
       .then(uri => {
         this.setState({status: ['ipfs upload success. uri='+uri, ...this.state.status], ipfsUploadResult: 'OK', ipfsUploadUri:uri })
@@ -377,14 +383,6 @@ export default class Debugging extends Component {
       .catch(e => {
         this.setState({status: ['ipfs upload failed'+e.message, ...this.state.status], ipfsUploadResult: 'FAILURE', ipfsUploadUri:''})
       })
-    }
-
-    handleChangeIpfsDownloadDecryptPrivKey(event){
-      this.setState({ipfsDownloadDecryptPrivKey: event.target.value})
-    }
-
-    handleOnIpfsClick(){
-      this.ipfsDataDownload(this.state.ipfsDataUri, this.state.ipfsDownloadDecryptPrivKey)
     }
 
     ipfsDataUploadPromise(data){
@@ -395,30 +393,8 @@ export default class Debugging extends Component {
       });
     }
 
-    ipfsDataDownload(ipfsDataUri, privkey){
-      //const uri = this.state.linniaPermission.dataUri
-      this.setState({status: ['loading event ipfs uri='+ipfsDataUri, ...this.state.status]})
-
-      // Use ipfs library to pull the encrypted data down from IPFS
-      ipfs.cat(ipfsDataUri, async (err, ipfsRes) => {
-        if(err){
-          this.setState({status: ['ipfs download failed. reason='+err.message, ...this.state.status]})
-        }else{
-          this.setState({status: ['ipfs download success', ...this.state.status], ipfsData: ipfsRes})
-          await this.ipfsDataDecrypt(ipfsRes, privkey) // this.state.keypairs_priv
-        }
-      })
-    }
-
-    async ipfsDataDecrypt(data, privkey){
-      decrypt(privkey, data).then(decrypted => {
-        this.setState({ipfsDataDecrypted: decrypted});
-        console.log('ipfsDataDecrypt', data, decrypt)
-      })
-      .catch(e => {
-        this.setState({ipfsDataDecrypted: 'error='+e.message});
-        console.log('ipfsDataDecrypted.failed', e)
-      })
+    handleOnLinniaCreateRecordClick(event){
+      this.linniaCreateRecord(this.state.ipfsUploadUri, 'mickDebug')
     }
 
     async linniaCreateRecord(dataUri, metadata){
@@ -435,20 +411,8 @@ export default class Debugging extends Component {
       }
     }
 
-    async linniaPermission(){
-      const accounts = await web3.eth.getAccounts()
-      const userAddress = accounts[0]
-      const linniaPermission = await linnia.getPermission(this.state.eventHash, userAddress)
-
-      if(linniaPermission && linniaPermission.canAccess && linniaPermission.dataUri){
-        this.setState({ipfsDataUri: linniaPermission.dataUri})
-      }
-
-      this.setState({userAddress, linniaPermission})
-    }
-
-    handleOnLinniaCreateRecordClick(event){
-      this.linniaCreateRecord(this.state.ipfsUploadUri, 'mickDebug')
+    handleChangeLinniaRecordPermissionMyPrivateKey(event) {
+      this.setState({linniaRecordPermissionMyPrivateKey: event.target.value})
     }
 
     async handleOnLinniaCreateRecordPermissionClick(event){
@@ -459,7 +423,7 @@ export default class Debugging extends Component {
 
       const that = this;
 
-      async function cb(err, result) {
+      async function cb(err, result, data) {
         if(err){
           that.setState({status: ['handleOnLinniaCreateRecordPermissionClick. ipfs download+decrypt.failed. reason='+err.message, ...that.state.status]})
           console.log('utilsIpfsDownloadAndDecrypt_callback', err)
@@ -505,19 +469,43 @@ export default class Debugging extends Component {
       }
     }
 
-    hashCode = function(s) {
-      var h = 0, l = s.length, i = 0;
-      if ( l > 0 )
-        while (i < l)
-          h = (h << 5) - h + s.charCodeAt(i++) | 0;
-      return h;
-    };
+    async handleChangeLinniaRecordPermissionPublicKey(event) {
+      const linniaRecordPermissionPublicKey = event.target.value
+      console.log('handleChangeLinniaRecordPermissionPublicKey', linniaRecordPermissionPublicKey)
+      this.setState({linniaRecordPermissionPublicKey})
+    }
+
+    async handleChangeLinniaRecordPermissionToEthAddress(event) {
+      const ethAddress = event.target.value
+      console.log('handleChangeLinniaRecordPermissionToEthAddress', ethAddress)
+      this.setState({linniaRecordPermissionToEthAddress: ethAddress})
+    }
+
+    handleEncryptorResultIpfsUpload(result) {
+      this.setState({ipfsUploadInput: result})
+    }
 
     render() {
-
         const status = this.state.status.map(s => {
-          return (<li key={this.hashCode(s)}>{s}</li>)
+          return (<li key={hashCode(s)}>{s}</li>)
         })
+
+        const that = this
+
+        console.log('this.state.ipfsUploadInput=', this.state.ipfsUploadInput)
+        const ipfsUploadInput = this.state.ipfsUploadInput
+        const ipfsUploadThen = (uri) => {
+          console.log('ipfs upload success. ', {uri})
+          //this.addStatus('ipfs upload success. uri='+uri)
+          that.setState({ ipfsUploadResult: 'OK', ipfsUploadUri:uri })
+        }
+        const ipfsUploadCatch = (e) => {
+          //this.addStatus('ipfs upload failed'+e.message)
+          console.log('ipfs upload failed', e)
+          that.setState({ ipfsUploadResult: 'FAILURE', ipfsUploadUri:'' })
+        }
+
+        //<p><button onClick={this.handleOnIpfsUploadClick}>upload encrypted text to ipfs</button></p>
 
         return (
             <div>
@@ -539,10 +527,10 @@ export default class Debugging extends Component {
               </div>
 
               <Separator />
-              <Decryptor />
+              <Encryptor />
 
               <Separator />
-              <Encryptor />
+              <Decryptor />
 
               <Separator />
               <LinniaPermission eventHash={this.state.eventHash} />
@@ -554,23 +542,28 @@ export default class Debugging extends Component {
               <LinniaJsGetRecord />
 
               <Separator />
+              <LinniaJsGetPermission />
+
+              <Separator />
               <div>
-                <h2>Upload to ipfs and create linnia record</h2>
-                <p><textarea rows="4" cols="50" value={this.state.ipfsUploadInput} onChange={this.handleChangeIpfsUploadInput} /> </p>
-                <p>{this.state.ipfsUploadInput}</p>
-                <p><button onClick={this.handleOnIpfsUploadClick}>upload to ipfs</button></p>
+                <h1>Upload... then create linnia record and permission</h1>
+
+                <p>enter your message and public key</p>
+                <Encryptor pubkey={this.state.makerPubKey} onChangeResult={this.handleEncryptorResultIpfsUpload} />
+
+                <IpfsUpload data={ipfsUploadInput} then={ipfsUploadThen} catch={ipfsUploadCatch} />
+
                 <p>{this.state.ipfsUploadResult} {this.state.ipfsUploadUri}</p>
                 { this.state.ipfsUploadResult && this.state.ipfsUploadResult.startsWith("OK") &&
                   <div>
-                    <p>only if OK</p>
+                    <h1>Upload DONE, now create linnia record... then permission</h1>
                     <p><button onClick={this.handleOnLinniaCreateRecordClick}>create linnia record</button></p>
                     <p>linnia record dataHash {this.state.linniaRecordDataHash}</p>
                   </div>
                 }
                 { this.state.linniaRecordDataHash &&
                   <div>
-                    <p>only if linnia record created</p>
-                    <p>give permission to that record!</p>
+                    <h1>Upload and record DONE... now give permission</h1>
                     <p>ETH @ <textarea rows="4" cols="50" value={this.state.linniaRecordPermissionToEthAddress} onChange={this.handleChangeLinniaRecordPermissionToEthAddress} /> </p>
                     <p>Public key <textarea rows="4" cols="50" value={this.state.linniaRecordPermissionPublicKey} onChange={this.handleChangeLinniaRecordPermissionPublicKey} /> </p>
                     <p>Private key to decrypt ipfs data <textarea rows="4" cols="50" value={this.state.linniaRecordPermissionMyPrivateKey} onChange={this.handleChangeLinniaRecordPermissionMyPrivateKey} /> </p>
@@ -580,9 +573,6 @@ export default class Debugging extends Component {
                   </div>
                 }
               </div>
-
-              <Separator />
-              <LinniaJsGetPermission />
 
             </div>
         );
