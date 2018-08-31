@@ -4,6 +4,7 @@ import { AcceptDeclineContainer } from './AcceptDeclineContainer';
 import SecretEventOrg from '../ethereum/SecretEventOrg';
 import web3 from '../ethereum/web3';
 import FullDetail from './FullDetail';
+import Debugging from './Debugging';
 import { checkIfMember, checkIfOwner, checkIfReferred } from '../actions/ReferralAction';
 
 class Home extends Component {
@@ -98,6 +99,9 @@ class Home extends Component {
               </Grid.Row>
             }
           </Grid.Column>
+          <Grid.Column width={12}><Grid.Row>
+            <Debugging />
+          </Grid.Row></Grid.Column>
         </Grid>
       </div>
     );
