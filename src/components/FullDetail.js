@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Form, Button, Message, Card } from 'semantic-ui-react';
 import Linnia from '@linniaprotocol/linnia-js';
 import IPFS from 'ipfs-mini';
-import  moment  from 'moment';
+import moment  from 'moment';
 import web3 from '../ethereum/web3';
 import config from '../config';
 import SecretEventOrg from '../ethereum/SecretEventOrg';
@@ -36,7 +36,8 @@ export default class FullDeail extends Component {
         event.preventDefault();
         const userAddr = await web3.eth.getAccounts();
         let p = await linnia.getPermission(this.state.eventHash,userAddr[0]);
-
+        console.log(p);
+        
         this.setState({errorMessage:'', decrypted:''});
 
         if(p && p.canAccess){
@@ -51,7 +52,8 @@ export default class FullDeail extends Component {
                     const encrypted = ipfsRes;
                     try {
                         const decrypted = await decrypt(privateKey, encrypted);
-                        this.setState({decrypted: decrypted});
+                        console.log(decrypted);
+                        this.setState({decrypted});
                     } catch (e) {
                         this.setState({errorMessage: "Error Decrypting Data. Probably Wrong Private Key!"});
                     }

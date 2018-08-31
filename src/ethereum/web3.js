@@ -9,7 +9,7 @@ function networkCheck(){
 				alert("This is Mainnet. Please switch to Ropsten Test Network!");
 				break
 		  	case "ropsten":
-				alert("Nice! You're now connected to Ropsten Test Network!");
+				//alert("Nice! You're now connected to Ropsten Test Network!");
 				break
 		  	case "rinkeby":
 				alert("This is Rinkeby test network. Please switch to Ropsten Test Network!");
