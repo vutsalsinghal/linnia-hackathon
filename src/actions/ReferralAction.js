@@ -6,7 +6,7 @@ export async function checkIfReferred() {
     // Gets the member account.
     const userAddress = await getDefaultEthereumAccount();
     let result = await SecretEventOrg.methods.checkIfReferred(userAddress).call();
-    console.log(result);
+    console.log('checkIfReferred', result);
     return result;
 };
 
@@ -14,7 +14,7 @@ export async function checkIfMember() {
     // Gets the member account.
     const userAddress = await getDefaultEthereumAccount();
     let result = await SecretEventOrg.methods.checkIfMember(userAddress).call();
-    console.log(result);
+    console.log('checkIfMember', result);
     return result;
 };
 
