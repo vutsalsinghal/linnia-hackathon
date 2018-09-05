@@ -6,16 +6,16 @@ import { AddRecord } from './components/AddRecord';
 
 class App extends Component {
   render() {
-    return (
-      <BrowserRouter>
-        <Layout>
-          <Switch>
-            <Route exact path="/" component={Home} />
-            <Route path="/addEvent" component={AddRecord} />
-          </Switch>
-        </Layout>
-      </BrowserRouter>
-    );
+  return (
+    <BrowserRouter>
+    <Layout>
+      <Switch>
+      <Route exact path="/linnia-hackathon/" component={Home} />
+      <Route path="/linnia-hackathon/addEvent" component={AddRecord} />
+      </Switch>
+    </Layout>
+    </BrowserRouter>
+  );
   }
 }
 

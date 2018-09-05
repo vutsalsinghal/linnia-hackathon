@@ -17,7 +17,6 @@ export async function decrypt (privKey, encrypted) {
 
     const encryptedObject = EthCrypto.cipher.parse(encrypted);    
     const decrypted = await EthCrypto.decryptWithPrivateKey(hexPrivKey,encryptedObject);
-    //console.log("inside crypto-utils: ",decrypted);
     const decryptedPayload = JSON.parse(decrypted);
 
     return decryptedPayload.message;

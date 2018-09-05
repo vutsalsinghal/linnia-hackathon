@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Grid, Card, Icon, Modal, Button } from 'semantic-ui-react';
+import { Grid, Card, Icon, Modal, Button, Loader, Dimmer } from 'semantic-ui-react';
 import { AcceptDeclineContainer } from './AcceptDeclineContainer';
 import SecretEventOrg from '../ethereum/SecretEventOrg';
 import web3 from '../ethereum/web3';
@@ -18,15 +18,22 @@ class Home extends Component {
     isOwner: false,
     isMember: false,
     isReferral: false,
+    loadingData:false,
   }
 
   async componentDidMount() {
+    this.setState({loadingData:true});
+
+    document.title = "Inner Circle";
+
     var eventHash = await SecretEventOrg.methods.currentEventHash().call();
     let { eventName, describe, capacity, deposit, start_time, duration } = await SecretEventOrg.methods.getEventInfo(eventHash).call();
     const isOwner = await checkIfOwner();
     const isMember = await checkIfMember();
     const isReferral = await checkIfReferred();
     this.setState({ eventName, describe, capacity, deposit, start_time, duration, isOwner, isMember, isReferral });
+
+    this.setState({loadingData:false});
   }
 
   renderEvent() {
@@ -56,6 +63,14 @@ class Home extends Component {
   }
 
   render() {
+    if(this.state.loadingData){
+      return (
+          <Dimmer active inverted>
+            <Loader size='massive'>Loading...</Loader>
+          </Dimmer>
+      );
+    }
+    
     return (
       <div>
         <h1></h1>

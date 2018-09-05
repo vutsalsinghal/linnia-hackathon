@@ -2,6 +2,7 @@
   "name": "linnia-hackathon",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://vutsalsinghal.github.io/linnia-hackathon/",
   "dependencies": {
     "@linniaprotocol/linnia-js": "^0.1.4",
     "eth-crypto": "^1.2.3",
@@ -9,6 +10,7 @@
     "ethereumjs-util": "^5.2.0",
     "fs-extra": "^7.0.0",
     "ganache-cli": "^6.1.8",
+    "gh-pages": "^1.2.0",
     "ipfs-mini": "^1.1.2",
     "mocha": "^5.2.0",
     "moment": "^2.22.0",
@@ -25,6 +27,8 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject"
   }
