@@ -70,7 +70,7 @@ class Home extends Component {
           </Dimmer>
       );
     }
-    
+        
     return (
       <div>
         <h1></h1>
@@ -81,6 +81,7 @@ class Home extends Component {
           <Grid.Column width={4}>
             {
               this.state.isReferral &&
+              
               <Grid.Row>
                 <Modal size='small'
                   trigger={

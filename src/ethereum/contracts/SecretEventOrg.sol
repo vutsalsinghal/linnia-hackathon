@@ -2,8 +2,21 @@ pragma solidity ^0.4.24;
 
 // Deployed at 0xa6dd1b746b37549b7d6645d2e87df6b38f95dd7c on Ropsten!
 
+contract EventFactory{
+    address[] public deployedEvents;
+    
+    function createCampaign(uint minContribution) public {
+        address newCampaign = new Campaign(msg.sender, minContribution);
+        deployedCampaigns.push(newCampaign);
+    }
+    
+    function getDeployedCampaign() public view returns(address[]){
+        return deployedCampaigns;
+    }
+}
+
 contract SecretEventOrg{
-    address public organizer;                                                  // Address of organizer
+    address public organizer;                                                   // Address of organizer
     string public encryption_key;                                               // Linnia encryption_key of event organizer 
     
     struct Member {                                                             // Member infromation type
@@ -21,11 +34,11 @@ contract SecretEventOrg{
         uint deposit;
         uint start_time;
         uint duration;
-        string location;                                                        // = "SECRET : Will be disclosed to members";
-        string details;                                                         // = "SECRET : Will be disclosed to members";
+        string location;                                                        // SECRET: Will be disclosed to members
+        string details;                                                         // SECRET: Will be disclosed to members
     }
     
-    address[] public innerCircle;                                                      // Address of members
+    address[] public innerCircle;                                               // Address of members
     uint numEvents = 0;                                                         // Total events successful so far
     uint MAX_REFERRALS = 5;
     
@@ -130,7 +143,7 @@ contract SecretEventOrg{
         return (memberInfo[_addr].provenance, memberInfo[_addr].initiator, memberInfo[_addr].referrals_remaining, memberInfo[_addr].public_key);
     }
     
-    // Checks if address was referred.
+    // Checks if address has referred.
     function checkIfReferred(address addr) public view returns(bool) {
         return referralInfo[addr] != 0;
     }
