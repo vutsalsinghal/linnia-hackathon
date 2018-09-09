@@ -27,6 +27,8 @@ export default class PendingPermission  extends Component {
     eventDetails:'',
     owner:'',
     loadingData:false,
+    currentAddress:'',
+    currentPubKey:'',
   }
 
   async componentDidMount(){
@@ -51,7 +53,6 @@ export default class PendingPermission  extends Component {
         let p = await linnia.getPermission(eventHash,memberAddress);
 
         if(p && !p.canAccess) {
-          console.log(memberAddress);
           pending_invites.push({'Address': memberAddress, 'publicKey': memberInfo.public_key});  
         }
         
@@ -61,7 +62,6 @@ export default class PendingPermission  extends Component {
       console.log(err.message);
     }
 
-    //console.log("pending invites: ",pending_invites);
     this.setState({pending_member_invites: pending_invites, loadingData:false});
   }
 
@@ -70,6 +70,7 @@ export default class PendingPermission  extends Component {
 
     this.setState({loading:true, errorMessage:''});
 
+    let fullDetails;
     let event_details = await linnia.getRecord(this.state.eventHash);
     const ipfsLink = event_details.dataUri;
     
@@ -79,58 +80,74 @@ export default class PendingPermission  extends Component {
         this.setState({errorMessage: err.message});
       }else{
         try {
-          const eventDetails = await decrypt(this.state.linnia_privateKey, encrypted);
-          this.setState({eventDetails});
+          fullDetails = await decrypt(this.state.linnia_privateKey, encrypted);
+          this.setState({eventDetails:fullDetails});
         } catch(e){
           this.setState({errorMessage: "Error Decrypting Data. Probably Wrong Private Key!"});
-          console.log("Error while decrypting: ",e.mesaage);
+          console.log("Error while decrypting: ",e.message);
         }
       }
     });
 
-    setInterval(() => {
+    const tmr = setInterval(() => {
       if (this.state.eventDetails === '') {
-        console.log('Still null...');
+
       }else{
-        this.setPermission();     
+        clearInterval(tmr);
+        this.setPermission();
       }
     }, 1000);
+    
   }
 
   setPermission = async () => {
-    let dataUri, encrypted;
+    let encrypted, dataUri;
 
-    this.state.pending_member_invites.map(async (invite) => {
-      try{
-        encrypted = await encrypt(invite.publicKey, this.state.eventDetails);
-      }catch(err){
-        this.setState({ errorMessage: err.message });
-        return;
-      }
+    try{
+      encrypted = await encrypt(this.state.currentPubKey, this.state.eventDetails);
+    }catch(err){
+      this.setState({ errorMessage: err.message, loading: false });
+      return;
+    }
       
-      try{
-        dataUri = await new Promise((resolve, reject) => {
-          ipfs.add(encrypted, (err, ipfsRed) => {
-            err ? reject(err) : resolve(ipfsRed)
-          })
+    try{
+      dataUri = await new Promise((resolve, reject) => {
+        ipfs.add(encrypted, (err, ipfsRed) => {
+          err ? reject(err) : resolve(ipfsRed)
         })
-      }catch(err){
-        this.setState({ errorMessage: err.message });
-        return;
-      }
+      })
+    }catch(err){
+      this.setState({ errorMessage: err.message, loading:false });
+      return;
+    }
 
-      try {
-        const { permissions } = await linnia.getContractInstances();
-        await permissions.grantAccess(this.state.eventHash, invite.Address, dataUri, { from: this.state.owner });
+    try {
+      const { permissions } = await linnia.getContractInstances();
+      await permissions.grantAccess(this.state.eventHash, this.state.currentAddress, dataUri, { from: this.state.owner });
 
-        this.setState({ msg: <Message positive header="Success!" content={invite.Address + " Invited Successfully!"} /> });
-      }catch(err){
-        this.setState({ errorMessage: err.message });
-        return;
-      }
-    });
+      this.setState({ msg: <Message positive header="Success!" content={this.state.currentAddress + " Invited Successfully!"} /> });
+    }catch(err){
+      this.setState({ errorMessage: err.message, loading: false });
+      return;
+    }
 
     this.setState({loading:false});
+  }
+
+  renderPermissions(){
+    const items = this.state.pending_member_invites.map(user => {
+      return (
+        <Message info>
+          <Message.Header>
+            {user.Address}
+            <Button floated="right" basic primary type='submit' onClick={event => this.setState({currentAddress:user.Address, currentPubKey:user.publicKey})} loading={this.state.loading} disabled={this.state.loading}>Allow</Button>
+          </Message.Header>
+          <br/>
+        </Message>
+      );
+    });
+
+    return (<div>{items}</div>);
   }
 
   render() {
@@ -147,13 +164,11 @@ export default class PendingPermission  extends Component {
       <div>
         <p>{this.state.pending_member_invites.length} pending permission requests!</p>
         <Form onSubmit={this.handleSubmit} error={!!this.state.errorMessage}>
-          <Form.Group>
-            <Form.Field width={12}>
-              <label htmlFor='linnia_privateKey'>Linnia Private Key</label>
-              <input type='password' onChange={event => this.setState({ linnia_privateKey: event.target.value })} value={this.state.linnia_privateKey} />
-            </Form.Field>
-            <Button basic primary type='submit' loading={this.state.loading} disabled={this.state.loading}>Send Invites</Button>
-          </Form.Group>
+          <Form.Field>
+            <label htmlFor='linnia_privateKey'>Linnia Private Key</label>
+            <input type='password' onChange={event => this.setState({ linnia_privateKey: event.target.value })} value={this.state.linnia_privateKey} />
+          </Form.Field>
+          {this.renderPermissions()}
           <Message error header="Oops!" content={this.state.errorMessage} />
           {this.state.msg}
         </Form>

@@ -37,6 +37,7 @@ export default class FullDeail extends Component {
 
   handleSubmit = async (event) => {
     event.preventDefault();
+
     const userAddr = await web3.eth.getAccounts();
     let p;
     if(this.state.isOwner) {
