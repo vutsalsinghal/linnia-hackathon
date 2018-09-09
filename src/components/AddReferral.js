@@ -19,7 +19,6 @@ export class AddReferral extends Component {
       const memberAddress = await web3.eth.getAccounts();
       let isReferred = await SecretEventOrg.methods.checkIfReferred(this.state.eth_address).call();
       let isMember = await SecretEventOrg.methods.checkIfMember(this.state.eth_address).call();
-      console.log(isMember, isReferred);
       if (isReferred || isMember){
         this.setState({ msg: <Message positive header="Is Referred/Member!" content={"Friend is already referred/member!"} /> });    
       }else{

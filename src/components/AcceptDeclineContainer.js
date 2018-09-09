@@ -2,7 +2,7 @@ import React from 'react';
 import { AcceptReferral } from './AcceptReferral';
 import { DeclineReferral } from './DeclineReferral';
 
-export class AcceptDeclineContainer extends React.Component{
+export default class AcceptDeclineContainer extends React.Component{
     render(){
 	    return (
 	    	<div>

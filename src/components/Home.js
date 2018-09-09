@@ -1,20 +1,23 @@
 import React, { Component } from 'react';
 import { Grid, Card, Icon, Modal, Button, Loader, Dimmer } from 'semantic-ui-react';
-import { AcceptDeclineContainer } from './AcceptDeclineContainer';
-import SecretEventOrg from '../ethereum/SecretEventOrg';
 import web3 from '../ethereum/web3';
+import SecretEventOrg from '../ethereum/SecretEventOrg';
 import FullDetail from './FullDetail';
+import AttendEvent from './AttendEvent';
 import PendingPermission from './PendingPermission';
+import AcceptDeclineContainer from './AcceptDeclineContainer';
 import { checkIfMember, checkIfOwner, checkIfReferred } from '../actions/ReferralAction';
 
 class Home extends Component {
   state = {
+    eventHash:'',
     eventName: '',
     describe: '',
     capacity: 0,
     deposit: 0,
     start_time: 0,
     duration: 0,
+    totalAttending:0,
     isOwner: false,
     isMember: false,
     isReferral: false,
@@ -27,11 +30,11 @@ class Home extends Component {
     document.title = "Inner Circle";
 
     var eventHash = await SecretEventOrg.methods.currentEventHash().call();
-    let { eventName, describe, capacity, deposit, start_time, duration } = await SecretEventOrg.methods.getEventInfo(eventHash).call();
+    let { eventName, describe, capacity, deposit, start_time, duration, totalAttending } = await SecretEventOrg.methods.getEventInfo(eventHash).call();
     const isOwner = await checkIfOwner();
     const isMember = await checkIfMember();
     const isReferral = await checkIfReferred();
-    this.setState({ eventName, describe, capacity, deposit, start_time, duration, isOwner, isMember, isReferral });
+    this.setState({ eventHash, eventName, describe, capacity, deposit, start_time, duration, totalAttending, isOwner, isMember, isReferral });
 
     this.setState({loadingData:false});
   }
@@ -44,7 +47,9 @@ class Home extends Component {
         <div>
         <Card.Header>Name: {this.state.eventName}</Card.Header>
         <Card.Meta>Capacity: {this.state.capacity}</Card.Meta>
-        <Card.Description>Min Deposit: {web3.utils.fromWei(this.state.deposit.toString(), 'ether')} ether</Card.Description>
+        <Card.Meta>Total Attending: {this.state.totalAttending}</Card.Meta>
+        <Card.Meta>Min Deposit: {web3.utils.fromWei(this.state.deposit.toString(), 'ether')} ether</Card.Meta>
+        <Card.Description>Description: {this.state.describe}</Card.Description>
         </div>
       );
     }else{
@@ -79,9 +84,9 @@ class Home extends Component {
             {this.renderEvent()}
           </Grid.Column>
           <Grid.Column width={4}>
+            <Button.Group basic vertical>
             {
               this.state.isReferral &&
-              
               <Grid.Row>
                 <Modal size='small'
                   trigger={
@@ -99,20 +104,36 @@ class Home extends Component {
             }
 
             {this.state.isMember &&
-              <Grid.Row>
-                <Modal size='small'
-                  trigger={
-                    <Button icon labelPosition='left' className="primary" floated="right">
-                      <Icon name='unlock' />
-                      Full Details
-                   </Button>
-                  }>
-                  <Modal.Header>Full Details of Event</Modal.Header>
-                  <Modal.Content>
-                    <FullDetail />
-                  </Modal.Content>
-                </Modal>
-              </Grid.Row>
+              <div>
+                <Grid.Row>
+                  <Modal size='small'
+                    trigger={
+                      <Button icon labelPosition='left' className="primary" floated="right">
+                        <Icon name='unlock' />
+                        Full Details
+                     </Button>
+                    }>
+                    <Modal.Header>Full Details of Event</Modal.Header>
+                    <Modal.Content>
+                      <FullDetail />
+                    </Modal.Content>
+                  </Modal>
+                </Grid.Row>
+                <Grid.Row>
+                  <Modal size='small'
+                    trigger={
+                      <Button icon labelPosition='left' className="primary" floated="right">
+                        <Icon name='calendar check outline' />
+                        Attend Event
+                     </Button>
+                    }>
+                    <Modal.Header>Let The Organiser Know If You're Attending</Modal.Header>
+                    <Modal.Content>
+                      <AttendEvent minDeposit={this.state.deposit} eventHash={this.state.eventHash} />
+                    </Modal.Content>
+                  </Modal>
+                </Grid.Row>
+              </div>
             }
 
             {this.state.isOwner &&
@@ -120,7 +141,7 @@ class Home extends Component {
                 <Modal size='small'
                   trigger={
                     <Button icon labelPosition='left' className="primary" floated="right">
-                      <Icon name='unlock' />
+                      <Icon name='calendar plus outline' />
                       Pending Permissions
                    </Button>
                   }>
@@ -131,6 +152,7 @@ class Home extends Component {
                 </Modal>
               </Grid.Row>
             }
+            </Button.Group>
           </Grid.Column>
         </Grid>
       </div>

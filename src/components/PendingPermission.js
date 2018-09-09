@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
-import { Form, Button, Message } from 'semantic-ui-react';
+import { Form, Button, Message, Dimmer, Loader } from 'semantic-ui-react';
 import Linnia from '@linniaprotocol/linnia-js';
 import IPFS from 'ipfs-mini';
-//import  moment  from 'moment';
 import web3 from '../ethereum/web3';
 import config from '../config';
 import SecretEventOrg from '../ethereum/SecretEventOrg';
@@ -27,9 +26,12 @@ export default class PendingPermission  extends Component {
     msg: '',
     eventDetails:'',
     owner:'',
+    loadingData:false,
   }
 
   async componentDidMount(){
+    this.setState({loadingData:true});
+
     // Check for pending invites;
     let pending_invites = [];
     let i = 0;
@@ -60,7 +62,7 @@ export default class PendingPermission  extends Component {
     }
 
     //console.log("pending invites: ",pending_invites);
-    this.setState({pending_member_invites: pending_invites});
+    this.setState({pending_member_invites: pending_invites, loadingData:false});
   }
 
   handleSubmit = async (event) => {
@@ -132,9 +134,18 @@ export default class PendingPermission  extends Component {
   }
 
   render() {
+    if(this.state.loadingData){
+      return (
+          <Dimmer active inverted>
+            <Loader size='medium'>Loading...</Loader>
+          </Dimmer>
+      );
+    }
+
     if(this.state.pending_member_invites.length > 0) {
     return (
       <div>
+        <p>{this.state.pending_member_invites.length} pending permission requests!</p>
         <Form onSubmit={this.handleSubmit} error={!!this.state.errorMessage}>
           <Form.Group>
             <Form.Field width={12}>

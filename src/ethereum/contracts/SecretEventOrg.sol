@@ -1,19 +1,6 @@
 pragma solidity ^0.4.24;
 
-// Deployed at 0xa6dd1b746b37549b7d6645d2e87df6b38f95dd7c on Ropsten!
-
-contract EventFactory{
-    address[] public deployedEvents;
-    
-    function createCampaign(uint minContribution) public {
-        address newCampaign = new Campaign(msg.sender, minContribution);
-        deployedCampaigns.push(newCampaign);
-    }
-    
-    function getDeployedCampaign() public view returns(address[]){
-        return deployedCampaigns;
-    }
-}
+// Deployed at 0x06af8345c1266ee172ee66a31e2be65bf9aa7b46 on Ropsten!
 
 contract SecretEventOrg{
     address public organizer;                                                   // Address of organizer
@@ -34,8 +21,9 @@ contract SecretEventOrg{
         uint deposit;
         uint start_time;
         uint duration;
-        string location;                                                        // SECRET: Will be disclosed to members
-        string details;                                                         // SECRET: Will be disclosed to members
+        uint totalAttending;                                                    // Total member who are attending event
+        string location;                                                        // = "SECRET : Will be disclosed to members";
+        string details;                                                         // = "SECRET : Will be disclosed to members";
     }
     
     address[] public innerCircle;                                               // Address of members
@@ -103,18 +91,18 @@ contract SecretEventOrg{
     } 
     
     modifier _ifDepositEnough(bytes32 id, uint val) {
-        require(val >= eventInfo[id].deposit, "Not enough Mulah" );
+        require(val >= eventInfo[id].deposit, "Not enough money" );
         _;
     }
      
     // Member refers a friend
     function referFriend(address _addr) public _onlyMember(msg.sender) _referralsAllowed(msg.sender) _notAlreadyReferred(_addr) {
         referralInfo[_addr] = msg.sender;
-        memberInfo[msg.sender].referrals_remaining--; 
+        memberInfo[msg.sender].referrals_remaining--;
     }
     
     // Referred friend applies for membership 
-    function applyMembership(string public_key) public _alreadyReferred(msg.sender) {
+    function applyMembership(string public_key) public payable _alreadyReferred(msg.sender) {
         memberInfo[msg.sender] = Member(msg.sender, memberInfo[referralInfo[msg.sender]].provenance+1, referralInfo[msg.sender], MAX_REFERRALS, public_key);
         referralInfo[msg.sender] = 0;
         innerCircle.push(msg.sender);
@@ -122,20 +110,24 @@ contract SecretEventOrg{
     
     // Add Event 
     function addEvent(bytes32 id, string name, string describe, uint capacity, uint deposit, uint start_time, uint duration) public _onlyOrganizer(msg.sender) _eventDoesntExists(id){
-        eventInfo[id] = SecretEvent(name, describe, capacity, deposit, now+start_time, duration, "SECRET: revealed to members", "SECRET: revealed to members");
+        eventInfo[id] = SecretEvent(name, describe, capacity, deposit, now+start_time, duration, 0, "SECRET: revealed to members", "SECRET: revealed to members");
         numEvents++;
         currentEventHash = id;
     }
     
     // Attend Event
     function attendEvent(bytes32 id) public payable _onlyMember(msg.sender) _eventNotExpired(id) _maxEventCap(id) _ifDepositEnough(id, msg.value){
-        uint balance = msg.value - eventInfo[id].deposit;
-        msg.sender.transfer(balance);
+        if (msg.value > eventInfo[id].deposit){
+            uint balance = msg.value - eventInfo[id].deposit;
+            msg.sender.transfer(balance);
+        }
+        
+        eventInfo[id].totalAttending++;
     }
     
     // Returns event info
-    function getEventInfo(bytes32 _recordHash) public view returns(string eventName, string describe, uint capacity, uint deposit, uint start_time, uint duration){
-        return (eventInfo[_recordHash].eventName, eventInfo[_recordHash].describe, eventInfo[_recordHash].capacity, eventInfo[_recordHash].deposit, eventInfo[_recordHash].start_time, eventInfo[_recordHash].duration);
+    function getEventInfo(bytes32 _recordHash) public view returns(string eventName, string describe, uint capacity, uint deposit, uint start_time, uint duration, uint totalAttending){
+        return (eventInfo[_recordHash].eventName, eventInfo[_recordHash].describe, eventInfo[_recordHash].capacity, eventInfo[_recordHash].deposit, eventInfo[_recordHash].start_time, eventInfo[_recordHash].duration, eventInfo[_recordHash].totalAttending);
     }
     
     // Returns member info
@@ -143,7 +135,7 @@ contract SecretEventOrg{
         return (memberInfo[_addr].provenance, memberInfo[_addr].initiator, memberInfo[_addr].referrals_remaining, memberInfo[_addr].public_key);
     }
     
-    // Checks if address has referred.
+    // Checks if address was referred.
     function checkIfReferred(address addr) public view returns(bool) {
         return referralInfo[addr] != 0;
     }
