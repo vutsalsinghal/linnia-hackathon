@@ -5,7 +5,6 @@ import IPFS from 'ipfs-mini';
 import moment  from 'moment';
 import web3 from '../ethereum/web3';
 import config from '../config';
-import SecretEventOrg from '../ethereum/SecretEventOrg';
 import { decrypt } from './crypto-utils';
 import { checkIfOwner } from '../actions/ReferralAction';
 
@@ -25,14 +24,12 @@ export default class FullDeail extends Component {
     msg: '',
     linnia_pk:'',
     decrypted:'',
-    eventHash:'',
     isOwner: false,
   }
 
   async componentDidMount(){
-    var eventHash = await SecretEventOrg.methods.currentEventHash().call();
     const isOwner = await checkIfOwner();
-    this.setState({eventHash, isOwner});
+    this.setState({isOwner});
   }
 
   handleSubmit = async (event) => {
@@ -41,9 +38,9 @@ export default class FullDeail extends Component {
     const userAddr = await web3.eth.getAccounts();
     let p;
     if(this.state.isOwner) {
-      p = await linnia.getRecord(this.state.eventHash);
+      p = await linnia.getRecord(this.props.eventHash);
     } else{
-      p = await linnia.getPermission(this.state.eventHash,userAddr[0]);
+      p = await linnia.getPermission(this.props.eventHash,userAddr[0]);
     }
     
     this.setState({errorMessage:'', decrypted:''});
@@ -73,7 +70,6 @@ export default class FullDeail extends Component {
 
   renderCard(){
     let jsonObj = JSON.parse(this.state.decrypted);
-
     return (
       <Card>
         <Card.Content>

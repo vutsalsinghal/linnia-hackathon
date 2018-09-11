@@ -21,7 +21,6 @@ export default class PendingPermission  extends Component {
     errorMessage: '',
     loading: false,
     pending_member_invites:[],
-    eventHash:'',
     linnia_privateKey:'',
     msg: '',
     eventDetails:'',
@@ -40,9 +39,7 @@ export default class PendingPermission  extends Component {
     let memberAddress, memberInfo;
     
     const [userAddr] = await web3.eth.getAccounts();
-    let eventHash = await SecretEventOrg.methods.currentEventHash().call();
-    this.setState({eventHash: eventHash, owner:userAddr});
-
+    this.setState({owner:userAddr});
     
     try{
       while(memberAddress !== "0x0"){
@@ -50,10 +47,10 @@ export default class PendingPermission  extends Component {
         memberInfo = await SecretEventOrg.methods.getMemberInfo(memberAddress).call();
 
         // Get member permissions
-        let p = await linnia.getPermission(eventHash,memberAddress);
+        let p = await linnia.getPermission(this.props.eventHash, memberAddress);
 
         if(p && !p.canAccess) {
-          pending_invites.push({'Address': memberAddress, 'publicKey': memberInfo.public_key});  
+          pending_invites.push({'Address': memberAddress, 'publicKey': memberInfo.public_key});
         }
         
         i++;
@@ -71,7 +68,7 @@ export default class PendingPermission  extends Component {
     this.setState({loading:true, errorMessage:''});
 
     let fullDetails;
-    let event_details = await linnia.getRecord(this.state.eventHash);
+    let event_details = await linnia.getRecord(this.props.eventHash);
     const ipfsLink = event_details.dataUri;
     
     // Use ipfs library to pull the encrypted data down from IPFS
@@ -123,7 +120,7 @@ export default class PendingPermission  extends Component {
 
     try {
       const { permissions } = await linnia.getContractInstances();
-      await permissions.grantAccess(this.state.eventHash, this.state.currentAddress, dataUri, { from: this.state.owner });
+      await permissions.grantAccess(this.props.eventHash, this.state.currentAddress, dataUri, { from: this.state.owner });
 
       this.setState({ msg: <Message positive header="Success!" content={this.state.currentAddress + " Invited Successfully!"} /> });
     }catch(err){
@@ -135,12 +132,12 @@ export default class PendingPermission  extends Component {
   }
 
   renderPermissions(){
-    const items = this.state.pending_member_invites.map(user => {
+    const items = this.state.pending_member_invites.map((user, id) => {
       return (
-        <Message info>
-          <Message.Header>
+        <Message info key={id}>
+          <Message.Header key={id}>
             {user.Address}
-            <Button floated="right" basic primary type='submit' onClick={event => this.setState({currentAddress:user.Address, currentPubKey:user.publicKey})} loading={this.state.loading} disabled={this.state.loading}>Allow</Button>
+            <Button key={id} floated="right" basic primary type='submit' onClick={event => this.setState({currentAddress:user.Address, currentPubKey:user.publicKey})} loading={this.state.loading} disabled={this.state.loading}>Allow</Button>
           </Message.Header>
           <br/>
         </Message>

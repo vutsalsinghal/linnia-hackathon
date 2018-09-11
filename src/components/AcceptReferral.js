@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { Form, Button, Message } from 'semantic-ui-react';
-//import { getDefaultEthereumAccount } from '../actions/EthereumAccountAction';
 import SecretEventOrg from '../ethereum/SecretEventOrg';
 import web3 from '../ethereum/web3';
 

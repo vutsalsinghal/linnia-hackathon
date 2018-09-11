@@ -115,7 +115,7 @@ class Home extends Component {
                     }>
                     <Modal.Header>Full Details of Event</Modal.Header>
                     <Modal.Content>
-                      <FullDetail />
+                      <FullDetail eventHash={this.state.eventHash} />
                     </Modal.Content>
                   </Modal>
                 </Grid.Row>
@@ -147,7 +147,7 @@ class Home extends Component {
                   }>
                   <Modal.Header>Pending Permission Request List</Modal.Header>
                   <Modal.Content>
-                    <PendingPermission />
+                    <PendingPermission eventHash={this.state.eventHash} />
                   </Modal.Content>
                 </Modal>
               </Grid.Row>
