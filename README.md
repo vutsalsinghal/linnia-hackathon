@@ -24,7 +24,7 @@ We've built an application using Linnia Protocol to spread, promote and advertis
 ```
 $ git clone https://github.com/vutsalsinghal/linnia-hackathon.git
 $ npm install
-$ npm start
+$ npm run start
 ```
 
 ## Built With
